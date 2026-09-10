@@ -2,10 +2,10 @@ import streamlit as st
 import unicodedata
 import random
 
-# Configuración de la página web (para que se vea bien en celular)
+# Configuración de la página web
 st.set_page_config(page_title="Test de Rocas", page_icon="🪨", layout="centered")
 
-# Base de datos completa con las 22 rocas del PDF
+# Base de datos completa
 elementos = [
     # Rocas Metamórficas
     {"nombre": "Pizarra", "propiedades": ["brillo escaso", "textura laminar", "foliacion poco penetrativa"], "origen": "regional bajo grado"},
@@ -48,6 +48,7 @@ if 'indice' not in st.session_state:
     st.session_state.puntaje = 0
     st.session_state.totales = 0
     st.session_state.verificado = False
+    st.session_state.resultado_actual = {} # Nuevo: Guarda el detalle de la pregunta actual
 
 st.title("🎓 Simulador: Test de Rocas")
 
@@ -67,7 +68,6 @@ else:
     p2 = st.text_input("Propiedad 2:", key=f"p2_{st.session_state.indice}")
     
     p3 = ""
-    # Solo mostrar la propiedad 3 si la roca tiene 3 propiedades en la tabla original
     if len(roca_actual["propiedades"]) == 3:
         p3 = st.text_input("Propiedad 3:", key=f"p3_{st.session_state.indice}")
         
@@ -78,41 +78,83 @@ else:
         if st.button("Verificar Respuestas", type="primary"):
             st.session_state.verificado = True
             
-            # Lógica de validación
             props_correctas = [normalizar_texto(p) for p in roca_actual["propiedades"]]
             respuestas = [p1, p2] if len(roca_actual["propiedades"]) == 2 else [p1, p2, p3]
+            
             props_encontradas = []
+            analisis_props = []
+            aciertos_pregunta = 0
+            totales_pregunta = 0
             
             # Revisar propiedades
             for resp in respuestas:
                 resp_norm = normalizar_texto(resp)
                 acierto = False
+                texto_mostrar = resp if resp.strip() != "" else "(En blanco)"
+                
                 for prop in props_correctas:
-                    if prop in resp_norm and prop not in props_encontradas:
-                        st.session_state.puntaje += 1
+                    if prop in resp_norm and prop not in props_encontradas and resp_norm != "":
                         props_encontradas.append(prop)
                         acierto = True
                         break
+                        
+                analisis_props.append({"texto": texto_mostrar, "correcto": acierto})
+                if acierto:
+                    st.session_state.puntaje += 1
+                    aciertos_pregunta += 1
                 st.session_state.totales += 1
+                totales_pregunta += 1
                 
             # Revisar origen
             origen_correcto = normalizar_texto(roca_actual["origen"])
-            if origen_correcto in normalizar_texto(origen) and origen != "":
-                st.session_state.puntaje += 1
-            st.session_state.totales += 1
+            resp_origen_norm = normalizar_texto(origen)
+            acierto_origen = False
+            texto_origen_mostrar = origen if origen.strip() != "" else "(En blanco)"
             
-            st.rerun() # Recargar la página para mostrar resultados
+            if origen_correcto in resp_origen_norm and resp_origen_norm != "":
+                acierto_origen = True
+                st.session_state.puntaje += 1
+                aciertos_pregunta += 1
+            st.session_state.totales += 1
+            totales_pregunta += 1
+            
+            # Guardar resultados de esta ronda en la memoria
+            st.session_state.resultado_actual = {
+                "props": analisis_props,
+                "origen": {"texto": texto_origen_mostrar, "correcto": acierto_origen},
+                "aciertos": aciertos_pregunta,
+                "totales": totales_pregunta
+            }
+            
+            st.rerun()
 
     # Si ya se verificó, mostrar resultados y botón de siguiente
     if st.session_state.verificado:
-        st.info("Respuestas registradas.")
-        st.write(f"**Propiedades correctas eran:** {', '.join(roca_actual['propiedades'])}")
-        st.write(f"**El origen correcto era:** {roca_actual['origen']}")
+        res = st.session_state.resultado_actual
+        
+        # Conteo de la pregunta actual
+        st.info(f"Desempeño en esta roca: **{res['aciertos']} correctas de {res['totales']} posibles.**")
+        
+        # Desglose visual de las respuestas del usuario
+        st.markdown("### Tus respuestas:")
+        for i, p in enumerate(res["props"]):
+            simbolo = "✅" if p["correcto"] else "❌"
+            st.write(f"- {simbolo} Propiedad {i+1}: {p['texto']}")
+            
+        simbolo_origen = "✅" if res["origen"]["correcto"] else "❌"
+        st.write(f"- {simbolo_origen} Origen: {res['origen']['texto']}")
+        
+        st.write("---")
+        # Respuestas esperadas (para retroalimentación)
+        st.markdown("### Respuestas correctas esperadas:")
+        st.write(f"**Propiedades:** {', '.join(roca_actual['propiedades'])}")
+        st.write(f"**Origen:** {roca_actual['origen']}")
         
         if st.button("Siguiente Roca ➔"):
             st.session_state.verificado = False
             st.session_state.indice += 1
+            st.session_state.resultado_actual = {}
             st.rerun()
 
     st.write("---")
-    st.markdown(f"### Puntaje: {st.session_state.puntaje} / {st.session_state.totales}")
+    st.markdown(f"### Puntaje Total: {st.session_state.puntaje} / {st.session_state.totales}")
