@@ -5,19 +5,36 @@ import random
 # Configuración de la página web (para que se vea bien en celular)
 st.set_page_config(page_title="Test de Rocas", page_icon="🪨", layout="centered")
 
-# Base de datos
+# Base de datos completa con las 22 rocas del PDF
 elementos = [
+    # Rocas Metamórficas
     {"nombre": "Pizarra", "propiedades": ["brillo escaso", "textura laminar", "foliacion poco penetrativa"], "origen": "regional bajo grado"},
     {"nombre": "Filita", "propiedades": ["brillo notorio", "textura laminar", "compuesta principalmente por micas"], "origen": "regional bajo grado"},
     {"nombre": "Esquisto de micas", "propiedades": ["foliacion penetrativa", "textura esquistosa", "presencia de micas"], "origen": "regional bajo grado"},
     {"nombre": "Esquisto de granate", "propiedades": ["foliacion penetrativa", "textura esquistosa", "presencia de granates"], "origen": "regional alto grado"},
     {"nombre": "Gneiss", "propiedades": ["textura bandeada", "alternancia de bandas oscuras y claras", "tonalidad rosacea"], "origen": "regional alto grado"},
     {"nombre": "Mármol", "propiedades": ["textura bandeada", "efervescencia con hcl", "color claro"], "origen": "metamorfismo contacto"},
+    
+    # Rocas Ígneas
     {"nombre": "Gabro", "propiedades": ["alto contenido en piroxenos", "alto contenido en plagioclasas basicas", "textura faneritica"], "origen": "intrusiva"},
+    {"nombre": "Diorita", "propiedades": ["presencia de micas", "alto contenido en plagioclasas intermedias", "color oscuro"], "origen": "intrusiva"},
+    {"nombre": "Diorita Cuarcífera", "propiedades": ["presencia de micas", "alto contenido en plagioclasas intermedias", "color oscuro"], "origen": "intrusiva"},
+    {"nombre": "Tonalita", "propiedades": ["poco feldespato potasico", "similar contenido de plagioclasa y cuarzo", "textura feneritica"], "origen": "intrusiva"},
+    {"nombre": "Granodiorita", "propiedades": ["bajo contenido de feldespato potasico", "alto contenido de plagioclasa", "textura faneritica"], "origen": "intrusiva"},
+    {"nombre": "Granito", "propiedades": ["equidad minerales formadores", "leve color rosado", "textura faneritica"], "origen": "intrusiva"},
+    {"nombre": "Granito Alcalino", "propiedades": ["alto contenido feldespato potasico", "color rosado", "textura faneritica"], "origen": "intrusiva"},
     {"nombre": "Basalto", "propiedades": ["textura afanitica", "color negro", "porosidades"], "origen": "extrusiva"},
+    {"nombre": "Andesita", "propiedades": ["textura porfidica", "fenocristales de plagioclasa", "bajo contenido de feldespato potasico"], "origen": "extrusiva"},
+    {"nombre": "Toba", "propiedades": ["ligera", "porosa", "presencia de cristales"], "origen": "piroclastico"},
+    {"nombre": "Pómez", "propiedades": ["ligera", "porosa", "textura vesicular"], "origen": "piroclastico"},
+    
+    # Rocas Sedimentarias
+    {"nombre": "Lutita", "propiedades": ["grano fino", "fisibles", "pueden contener fosiles"], "origen": "mecanico, transporte y sedimentacion"},
+    {"nombre": "Arenisca", "propiedades": ["porosa", "buena seleccion", "suele ser ligera"], "origen": "mecanico, transporte y sedimentacion"},
+    {"nombre": "Conglomerado", "propiedades": ["clastos redondeados", "seleccion mala"], "origen": "mecanico, transporte y sedimentacion"},
     {"nombre": "Caliza", "propiedades": ["reaccion con hcl", "colores claros"], "origen": "medio quimico"},
-    {"nombre": "Conglomerado", "propiedades": ["clastos redondeados", "seleccion mala"], "origen": "mecanico, transporte y sedimentacion"}
-] # (Agregué algunas rocas, puedes completar la lista como en el código anterior)
+    {"nombre": "Coquina", "propiedades": ["reaccion con hcl", "presencia de conchas de moluscos", "fragil"], "origen": "acumulacion de conchas"}
+]
 
 def normalizar_texto(texto):
     texto = unicodedata.normalize('NFD', texto).encode('ascii', 'ignore').decode('utf-8')
@@ -50,6 +67,7 @@ else:
     p2 = st.text_input("Propiedad 2:", key=f"p2_{st.session_state.indice}")
     
     p3 = ""
+    # Solo mostrar la propiedad 3 si la roca tiene 3 propiedades en la tabla original
     if len(roca_actual["propiedades"]) == 3:
         p3 = st.text_input("Propiedad 3:", key=f"p3_{st.session_state.indice}")
         
